@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ViolentDeck — Профиль</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-actions">
+      <a class="ghost-button" href="{{ url_for('shop') }}">Магазин</a>
+      {% if user.role != 'admin' %}
+      <a class="ghost-button" href="{{ url_for('cart_page') }}">Корзина{% if cart_count %} ({{ cart_count }}){% endif %}</a>
+      {% endif %}
+      {% if user.role == 'admin' %}
+      <a class="ghost-button" href="{{ url_for('admin_dashboard') }}">Админ-панель</a>
+      {% endif %}
+    </div>
+    <div class="brand-name">ViolentDeck</div>
+    <a class="ghost-button" href="{{ url_for('logout') }}">Выход</a>
+  </header>
+  <main class="profile-page">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="flash-box">
+        {% for message in messages %}
+          <p>{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% endwith %}
+    <section class="profile-grid">
+      <article class="profile-card">
+        <p class="eyebrow">Профиль</p>
+        <h1>Личные данные</h1>
+        <div class="profile-item">
+          <span>Логин</span>
+          <strong>{{ user.username }}</strong>
+        </div>
+        <div class="profile-item">
+          <span>Почта</span>
+          <strong>{{ user.email }}</strong>
+        </div>
+        <div class="profile-item">
+          <span>Роль</span>
+          <strong>{{ 'Администратор' if user.role == 'admin' else 'Пользователь' }}</strong>
+        </div>
+      </article>
+      <article class="profile-card">
+        <p class="eyebrow">Безопасность</p>
+        <h2>Смена пароля</h2>
+        <p class="subtitle">Отправим код подтверждения на вашу почту, после чего вы сможете задать новый пароль.</p>
+        <form action="{{ url_for('send_password_reset_code_route') }}" method="post">
+          <button type="submit" class="primary">Отправить код на почту</button>
+        </form>
+      </article>
+    </section>
+    <section class="orders-section">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Заказы</p>
+          <h2>История покупок</h2>
+        </div>
+      </div>
+      {% if orders %}
+      <div class="orders-grid">
+        {% for order in orders %}
+        <a class="order-card order-link" href="{{ url_for('order_detail', order_id=order.id) }}">
+          {% if order.first_product_image_url %}
+          <img class="order-card-image" src="{{ get_image_source(order.first_product_image_url) }}" alt="Заказ №{{ order.id }}">
+          {% endif %}
+          <div class="order-card-body">
+            <h3>Заказ №{{ order.id }}</h3>
+            <p class="pagination-label">Товаров: {{ order.items_count }}</p>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <section class="empty-state-card">
+        <h2>У вас пока нет заказов</h2>
+        <p>Оформите заказ в любой категории, и он появится здесь.</p>
+      </section>
+      {% endif %}
+    </section>
+  </main>
+</body>
+</html>

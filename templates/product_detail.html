@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ViolentDeck — {{ product.name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-actions">
+      <a class="ghost-button" href="{{ url_for('shop') }}">Магазин</a>
+      {% if user.role != 'admin' %}
+      <a class="ghost-button" href="{{ url_for('cart_page') }}">Корзина{% if cart_count %} ({{ cart_count }}){% endif %}</a>
+      {% endif %}
+      <a class="ghost-button" href="{{ url_for('profile') }}">Профиль</a>
+      {% if user.role == 'admin' %}
+      <a class="ghost-button" href="{{ url_for('admin_dashboard') }}">Админ-панель</a>
+      {% endif %}
+    </div>
+    <div class="brand-name">ViolentDeck</div>
+    <a class="ghost-button" href="{{ url_for('logout') }}">Выход</a>
+  </header>
+  <main class="category-page">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="flash-box">
+        {% for message in messages %}
+          <p>{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Товар</p>
+        <h1>{{ product.name }}</h1>
+        {% if category %}
+        <p class="subtitle">Категория: {{ category.title }}</p>
+        {% endif %}
+      </div>
+      {% if category %}
+      <a class="ghost-button" href="{{ url_for('category_page', slug=category.slug) }}">Назад</a>
+      {% else %}
+      <a class="ghost-button" href="{{ url_for('shop') }}">Назад</a>
+      {% endif %}
+    </div>
+
+    <section class="profile-grid">
+      <article class="profile-card">
+        <img class="category-image" src="{{ get_image_source(product.image_url) }}" alt="{{ product.name }}">
+      </article>
+      <article class="profile-card">
+        <div class="profile-item"><span>Цена</span><strong>{{ '%.2f'|format(product.price) }} ₽</strong></div>
+        <p class="subtitle">{{ product.description }}</p>
+        {% if user.role != 'admin' %}
+        <form class="order-form" action="{{ url_for('add_to_cart') }}" method="post">
+          <input type="hidden" name="product_id" value="{{ product.id }}">
+          <input type="hidden" name="category_slug" value="{{ product.category_slug }}">
+          <input type="hidden" name="page" value="1">
+          <label class="quantity-field">
+            <span>Количество</span>
+            <input name="quantity" type="number" min="1" max="{{ limits.cart_quantity }}" step="1" inputmode="numeric" value="1" required>
+          </label>
+          <button type="submit" class="primary">В корзину</button>
+        </form>
+        {% endif %}
+      </article>
+    </section>
+
+    <section class="admin-card" style="margin-top: 1.25rem;">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Отзывы</p>
+          <h2>Отзывы о товаре</h2>
+        </div>
+        <span class="pagination-label">
+          {% if average_rating is not none %}
+          Средняя оценка: {{ average_rating }} / 5 • Всего: {{ reviews_count }}
+          {% else %}
+          Отзывов пока нет
+          {% endif %}
+        </span>
+      </div>
+      {% if reviews %}
+      <div class="order-items-list">
+        {% for review in reviews %}
+        <article class="profile-card" style="padding: 1rem;">
+          <div class="profile-item"><span>{{ review.username }}</span><strong>{{ review.rating }}/5</strong></div>
+          <p style="margin: 0.6rem 0 0;">{{ review.text }}</p>
+          <p class="pagination-label" style="margin: 0.6rem 0 0;">{{ review.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+        </article>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </section>
+  </main>
+</body>
+</html>
+

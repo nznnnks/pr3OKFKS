@@ -1,0 +1,83 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ViolentDeck — {{ category.title }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-actions">
+      <a class="ghost-button" href="{{ url_for('shop') }}">Назад в магазин</a>
+      {% if user.role != 'admin' %}
+      <a class="ghost-button" href="{{ url_for('cart_page') }}">Корзина{% if cart_count %} ({{ cart_count }}){% endif %}</a>
+      {% endif %}
+      <a class="ghost-button" href="{{ url_for('profile') }}">Профиль</a>
+      {% if user.role == 'admin' %}
+      <a class="ghost-button" href="{{ url_for('admin_dashboard') }}">Админ-панель</a>
+      {% endif %}
+    </div>
+    <div class="brand-name">ViolentDeck</div>
+    <a class="ghost-button" href="{{ url_for('logout') }}">Выход</a>
+  </header>
+  <main class="category-page">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="flash-box">
+        {% for message in messages %}
+          <p>{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% endwith %}
+    <section class="category-hero">
+      <div>
+        <p class="eyebrow">{{ category.accent.upper() }}</p>
+        <h1>{{ category.title }}</h1>
+        <p class="subtitle">{{ category.description }}</p>
+      </div>
+      <img class="category-image" src="{{ get_image_source(category.image) }}" alt="{{ category.title }}">
+    </section>
+    {% if products %}
+    <section class="catalog-grid">
+      {% for product in products %}
+      <article class="product-card">
+        <a class="product-card-link" href="{{ url_for('product_detail', product_id=product.id) }}">
+          <img class="product-card-image" src="{{ get_image_source(product.image_url) }}" alt="{{ product.name }}">
+        </a>
+        <div class="product-card-body">
+          <h2><a class="product-card-link" href="{{ url_for('product_detail', product_id=product.id) }}">{{ product.name }}</a></h2>
+          <strong class="price-label">{{ '%.2f'|format(product.price) }} ₽</strong>
+          {% if user.role != 'admin' %}
+          <form action="{{ url_for('add_to_cart') }}" method="post" class="order-form">
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            <input type="hidden" name="category_slug" value="{{ category.slug }}">
+            <input type="hidden" name="page" value="{{ page }}">
+            <label class="quantity-field">
+              <span>Количество</span>
+              <input name="quantity" type="number" min="1" max="{{ limits.cart_quantity }}" step="1" inputmode="numeric" value="1" required>
+            </label>
+            <button type="submit" class="primary">В корзину</button>
+          </form>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </section>
+    {% else %}
+    <section class="empty-state-card">
+      <h2>{{ category.empty_title }}</h2>
+      <p>{{ category.empty_description }}</p>
+    </section>
+    {% endif %}
+    {% if total_pages > 1 %}
+    <nav class="pagination-bar">
+      <a class="ghost-button{% if page == 1 %} disabled-link{% endif %}" href="{{ url_for('category_page', slug=category.slug, page=page-1) if page > 1 else '#' }}">Назад</a>
+      <span class="pagination-label">Страница {{ page }} из {{ total_pages }}</span>
+      <a class="ghost-button{% if page == total_pages %} disabled-link{% endif %}" href="{{ url_for('category_page', slug=category.slug, page=page+1) if page < total_pages else '#' }}">Далее</a>
+    </nav>
+    {% endif %}
+  </main>
+</body>
+</html>

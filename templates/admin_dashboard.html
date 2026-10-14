@@ -1,0 +1,99 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ViolentDeck — Админ-панель</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-actions">
+      <a class="ghost-button" href="{{ url_for('shop') }}">Магазин</a>
+      <a class="ghost-button" href="{{ url_for('profile') }}">Профиль</a>
+    </div>
+    <div class="brand-name">ViolentDeck</div>
+    <a class="ghost-button" href="{{ url_for('logout') }}">Выход</a>
+  </header>
+  <main class="admin-page">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="flash-box">
+        {% for message in messages %}
+          <p>{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% endwith %}
+    <section class="admin-grid">
+      <article class="admin-card">
+        <p class="eyebrow">Обзор</p>
+        <h1>Админ-панель</h1>
+        <div class="profile-item"><span>Пользователи</span><strong>{{ users_count }}</strong></div>
+        <div class="profile-item"><span>Товары</span><strong>{{ products_count }}</strong></div>
+        <div class="profile-item"><span>Заказы</span><strong>{{ orders_count }}</strong></div>
+        <div class="profile-item"><span>Отзывы</span><strong>{{ reviews_count }}</strong></div>
+      </article>
+      <article class="admin-card">
+        <p class="eyebrow">Разделы</p>
+        <h2>Категории</h2>
+        {% for category in category_counts %}
+        <div class="profile-item"><span>{{ category.title }}</span><strong>{{ category.count }}</strong></div>
+        {% endfor %}
+      </article>
+    </section>
+    <section class="admin-nav-grid">
+      <a class="admin-link-card" href="{{ url_for('admin_users') }}">
+        <h2>Пользователи</h2>
+        <p>Редактирование логинов, почты, ролей и статуса подтверждения.</p>
+      </a>
+      <a class="admin-link-card" href="{{ url_for('admin_orders') }}">
+        <h2>Заказы</h2>
+        <p>Просмотр всех заказов пользователей с пагинацией.</p>
+      </a>
+      <a class="admin-link-card" href="{{ url_for('admin_products') }}">
+        <h2>Товары</h2>
+        <p>Добавление товаров в категории и просмотр каталога с пагинацией.</p>
+      </a>
+      <a class="admin-link-card" href="{{ url_for('admin_reviews') }}">
+        <h2>Отзывы</h2>
+        <p>Модерация отзывов пользователей: редактирование и удаление.</p>
+      </a>
+    </section>
+    <section class="admin-card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Фильтры</p>
+          <h2>Быстрые переходы</h2>
+        </div>
+      </div>
+      <div class="filter-row">
+        <a class="ghost-button" href="{{ url_for('admin_users', role='admin') }}">Администраторы</a>
+        <a class="ghost-button" href="{{ url_for('admin_users', verified='unverified') }}">Неподтверждённые</a>
+        <a class="ghost-button" href="{{ url_for('admin_orders', status='new') }}">Новые заказы</a>
+        <a class="ghost-button" href="{{ url_for('admin_products', category='skateboards') }}">Скейтборды</a>
+      </div>
+    </section>
+    <section class="admin-card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Аналитика</p>
+          <h2>Графики и диаграммы</h2>
+        </div>
+      </div>
+      <p>Скачивает HTML-отчёт в стиле сайта: графики по товарам, пользователям и заказам, включая динамику покупок по дням.</p>
+      <a class="ghost-button" href="{{ url_for('admin_export_analytics') }}">Скачать аналитику</a>
+    </section>
+    <section class="admin-card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Логи</p>
+          <h2>Действия за 10 минут</h2>
+        </div>
+      </div>
+      <p>Скачивает файл со всеми действиями, которые приложение зафиксировало за последние 10 минут.</p>
+      <a class="ghost-button" href="{{ url_for('admin_export_logs') }}">Скачать логи</a>
+    </section>
+  </main>
+</body>
+</html>

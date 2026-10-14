@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ViolentDeck — Отзывы</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-actions">
+      <a class="ghost-button" href="{{ url_for('admin_dashboard') }}">Админ-панель</a>
+      <a class="ghost-button" href="{{ url_for('admin_users') }}">Пользователи</a>
+      <a class="ghost-button" href="{{ url_for('admin_products') }}">Товары</a>
+      <a class="ghost-button" href="{{ url_for('admin_orders') }}">Заказы</a>
+      <a class="ghost-button" href="{{ url_for('admin_reviews') }}">Отзывы</a>
+    </div>
+    <div class="brand-name">ViolentDeck</div>
+    <a class="ghost-button" href="{{ url_for('logout') }}">Выход</a>
+  </header>
+  <main class="admin-page">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="flash-box">
+        {% for message in messages %}
+          <p>{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% endwith %}
+    <section class="admin-card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Отзывы</p>
+          <h1>Отзывы к заказам</h1>
+        </div>
+        <span class="pagination-label">Всего: {{ total }}</span>
+      </div>
+      <form class="filter-row filter-form" method="get" action="{{ url_for('admin_reviews') }}">
+        <input name="q" type="search" maxlength="{{ limits.search }}" value="{{ search_query }}" placeholder="Поиск по ID, заказу, checkout, пользователю или тексту">
+        <button type="submit" class="ghost-button">Фильтровать</button>
+        <a class="ghost-button" href="{{ url_for('admin_reviews') }}">Сбросить</a>
+      </form>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Заказ</th>
+              <th>Checkout</th>
+              <th>Пользователь</th>
+              <th>Почта</th>
+              <th>Оценка</th>
+              <th>Текст</th>
+              <th>Создан</th>
+              <th>Обновлён</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for review in reviews %}
+            <tr>
+              <form action="{{ url_for('admin_update_review', review_id=review.id) }}" method="post">
+                <td>
+                  {{ review.id }}
+                  <input type="hidden" name="page" value="{{ page }}">
+                  <input type="hidden" name="q" value="{{ search_query }}">
+                </td>
+                <td>{{ review.order_id }}</td>
+                <td>{{ review.checkout_id or '—' }}</td>
+                <td>{{ review.username }}</td>
+                <td>{{ review.email or '—' }}</td>
+                <td>
+                  <select name="rating" required>
+                    {% for value in [1,2,3,4,5] %}
+                    <option value="{{ value }}" {% if review.rating == value %}selected{% endif %}>{{ value }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td><textarea name="text" rows="3" required>{{ review.text }}</textarea></td>
+                <td>{{ review.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                <td>{{ review.updated_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                <td class="order-actions-cell">
+                  <button type="submit" class="primary compact-button">Сохранить</button>
+                  <button type="submit" class="ghost-button compact-button" formaction="{{ url_for('admin_delete_review', review_id=review.id) }}" formnovalidate onclick="return confirm('Удалить отзыв?')">Удалить</button>
+                </td>
+              </form>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% if total_pages > 1 %}
+    <nav class="pagination-bar">
+      <a class="ghost-button{% if page == 1 %} disabled-link{% endif %}" href="{{ url_for('admin_reviews', page=page-1, q=search_query) if page > 1 else '#' }}">Назад</a>
+      <span class="pagination-label">Страница {{ page }} из {{ total_pages }}</span>
+      <a class="ghost-button{% if page == total_pages %} disabled-link{% endif %}" href="{{ url_for('admin_reviews', page=page+1, q=search_query) if page < total_pages else '#' }}">Далее</a>
+    </nav>
+    {% endif %}
+  </main>
+</body>
+</html>
+
